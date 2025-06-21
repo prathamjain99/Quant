@@ -26,15 +26,48 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Add response interceptor to handle auth errors
+// Add response interceptor to handle auth errors and token refresh
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) {
+          const response = await axios.post(`${API_BASE_URL}/api/auth/refresh`, {
+            refreshToken
+          });
+
+          const { token, expiresAt } = response.data;
+          localStorage.setItem('token', token);
+          localStorage.setItem('tokenExpiry', expiresAt);
+
+          // Retry original request with new token
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        // Refresh failed, redirect to login
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        localStorage.removeItem('tokenExpiry');
+        window.location.href = '/login';
+      }
+    }
+
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+      localStorage.removeItem('tokenExpiry');
       window.location.href = '/login';
     }
+
     return Promise.reject(error);
   }
 );
@@ -46,6 +79,33 @@ export const authAPI = {
   
   register: (userData: any) =>
     api.post('/api/auth/register', userData),
+  
+  logout: () =>
+    api.post('/api/auth/logout'),
+  
+  refresh: (data: { refreshToken: string }) =>
+    api.post('/api/auth/refresh', data),
+  
+  validate: () =>
+    api.get('/api/auth/validate'),
+  
+  getProfile: () =>
+    api.get('/api/auth/profile'),
+  
+  updateProfile: (profile: any) =>
+    api.put('/api/auth/profile', profile),
+  
+  changePassword: (data: { oldPassword: string; newPassword: string }) =>
+    api.post('/api/auth/change-password', data),
+  
+  getSessions: () =>
+    api.get('/api/auth/sessions'),
+  
+  terminateSession: (sessionToken: string) =>
+    api.delete(`/api/auth/sessions/${sessionToken}`),
+  
+  logoutAll: () =>
+    api.post('/api/auth/logout-all'),
   
   health: () =>
     api.get('/api/auth/health'),

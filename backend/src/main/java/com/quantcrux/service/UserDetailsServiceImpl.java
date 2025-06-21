@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -18,13 +19,13 @@ import java.util.Collections;
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
+        User user = userRepository.findByUsernameOrEmail(username, username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username or email: " + username));
 
         return UserPrincipal.create(user);
     }
@@ -35,13 +36,18 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         private String email;
         private String password;
         private Collection<? extends GrantedAuthority> authorities;
+        private boolean isActive;
+        private boolean isAccountLocked;
 
-        public UserPrincipal(Long id, String username, String email, String password, Collection<? extends GrantedAuthority> authorities) {
+        public UserPrincipal(Long id, String username, String email, String password, 
+                           Collection<? extends GrantedAuthority> authorities, boolean isActive, boolean isAccountLocked) {
             this.id = id;
             this.username = username;
             this.email = email;
             this.password = password;
             this.authorities = authorities;
+            this.isActive = isActive;
+            this.isAccountLocked = isAccountLocked;
         }
 
         public static UserPrincipal create(User user) {
@@ -52,7 +58,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                     user.getUsername(),
                     user.getEmail(),
                     user.getPassword(),
-                    Collections.singletonList(authority)
+                    Collections.singletonList(authority),
+                    user.getIsActive(),
+                    user.isAccountLocked()
             );
         }
 
@@ -86,7 +94,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         @Override
         public boolean isAccountNonLocked() {
-            return true;
+            return !isAccountLocked;
         }
 
         @Override
@@ -96,7 +104,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         @Override
         public boolean isEnabled() {
-            return true;
+            return isActive;
         }
     }
 }
