@@ -1,0 +1,47 @@
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.gradient-border {
+  background: linear-gradient(135deg, #0066cc, #ffb800);
+  padding: 2px;
+  border-radius: 8px;
+}
+
+.gradient-border-content {
+  background: #1f2937;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.chart-tooltip {
+  background: rgba(31, 41, 55, 0.95);
+  border: 1px solid #374151;
+  border-radius: 8px;
+  padding: 12px;
+  color: white;
+}
+
+.trading-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(0, 102, 204, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 102, 204, 0.8);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
