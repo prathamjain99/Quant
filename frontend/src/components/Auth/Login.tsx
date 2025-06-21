@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { TrendingUp, Lock, User, AlertCircle } from 'lucide-react';
+import { TrendingUp, Lock, User, AlertCircle, UserPlus } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Register from './Register';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showRegister, setShowRegister] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -57,6 +59,10 @@ const Login: React.FC = () => {
       color: 'from-purple-500 to-purple-600'
     }
   ];
+
+  if (showRegister) {
+    return <Register onBackToLogin={() => setShowRegister(false)} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center p-4">
@@ -151,7 +157,7 @@ const Login: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Username
+                Username or Email
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -163,7 +169,7 @@ const Login: React.FC = () => {
                     setError('');
                   }}
                   className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter username"
+                  placeholder="Enter username or email"
                   required
                 />
               </div>
@@ -207,10 +213,22 @@ const Login: React.FC = () => {
             </motion.button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-4">
             <p className="text-gray-400 text-sm">
               Demo credentials: Use any username above with password <span className="text-blue-400 font-mono">"password"</span>
             </p>
+            
+            <div className="border-t border-gray-700 pt-4">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowRegister(true)}
+                className="flex items-center justify-center space-x-2 w-full py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+              >
+                <UserPlus className="h-4 w-4" />
+                <span>Create New Account</span>
+              </motion.button>
+            </div>
           </div>
         </motion.div>
       </div>
