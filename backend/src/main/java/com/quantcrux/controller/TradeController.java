@@ -1,5 +1,6 @@
 package com.quantcrux.controller;
 
+import com.quantcrux.dto.TradeDTO;
 import com.quantcrux.dto.TradeRequest;
 import com.quantcrux.model.Product;
 import com.quantcrux.model.Trade;
@@ -7,6 +8,7 @@ import com.quantcrux.model.User;
 import com.quantcrux.repository.ProductRepository;
 import com.quantcrux.repository.TradeRepository;
 import com.quantcrux.repository.UserRepository;
+import com.quantcrux.service.TradeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -21,6 +23,9 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/api/trades")
 public class TradeController {
+
+    @Autowired
+    private TradeService tradeService;
 
     @Autowired
     private TradeRepository tradeRepository;
@@ -58,71 +63,32 @@ public class TradeController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Get all trades for the authenticated user using DTO projection
+     */
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getTrades(Authentication authentication) {
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        List<Trade> trades = tradeRepository.findByUser(user);
-        
-        List<Map<String, Object>> tradeResponses = trades.stream().map(trade -> {
-            Map<String, Object> tradeMap = new HashMap<>();
-            tradeMap.put("id", trade.getId());
-            tradeMap.put("productName", trade.getProduct().getName());
-            tradeMap.put("tradeType", trade.getTradeType());
-            tradeMap.put("status", trade.getStatus().name());
-            tradeMap.put("notional", trade.getNotional());
-            tradeMap.put("entryPrice", trade.getEntryPrice());
-            tradeMap.put("currentPrice", trade.getCurrentPrice());
-            
-            // Calculate P&L
-            double pnl = 0.0;
-            if (trade.getCurrentPrice() != null && trade.getEntryPrice() != null) {
-                if ("BUY".equals(trade.getTradeType())) {
-                    pnl = (trade.getCurrentPrice() - trade.getEntryPrice()) * trade.getNotional() / 100;
-                } else {
-                    pnl = (trade.getEntryPrice() - trade.getCurrentPrice()) * trade.getNotional() / 100;
-                }
-            }
-            tradeMap.put("pnl", pnl);
-            tradeMap.put("tradeDate", trade.getTradeDate());
-            
-            return tradeMap;
-        }).toList();
-
-        return ResponseEntity.ok(tradeResponses);
+    public ResponseEntity<List<TradeDTO>> getTrades(Authentication authentication) {
+        List<TradeDTO> trades = tradeService.getUserTrades(authentication.getName());
+        return ResponseEntity.ok(trades);
     }
 
+    /**
+     * Get a specific trade by ID
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<Trade> getTrade(@PathVariable Long id, Authentication authentication) {
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Trade trade = tradeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trade not found"));
-
-        if (!trade.getUser().getId().equals(user.getId())) {
-            return ResponseEntity.forbidden().build();
-        }
-
+    public ResponseEntity<TradeDTO> getTrade(@PathVariable Long id, Authentication authentication) {
+        TradeDTO trade = tradeService.getUserTrade(authentication.getName(), id);
         return ResponseEntity.ok(trade);
     }
 
+    /**
+     * Update trade status
+     */
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateTradeStatus(@PathVariable Long id, @RequestParam String status, Authentication authentication) {
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Trade trade = tradeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trade not found"));
-
-        if (!trade.getUser().getId().equals(user.getId())) {
-            return ResponseEntity.forbidden().build();
-        }
-
         try {
-            trade.setStatus(Trade.TradeStatus.valueOf(status.toUpperCase()));
-            tradeRepository.save(trade);
+            Trade.TradeStatus tradeStatus = Trade.TradeStatus.valueOf(status.toUpperCase());
+            tradeService.updateTradeStatus(authentication.getName(), id, tradeStatus);
             
             Map<String, String> response = new HashMap<>();
             response.put("message", "Trade status updated successfully");
@@ -132,5 +98,14 @@ public class TradeController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid status: " + status));
         }
+    }
+
+    /**
+     * Alternative endpoint using JPQL projection
+     */
+    @GetMapping("/projection")
+    public ResponseEntity<List<TradeDTO>> getTradesWithProjection(Authentication authentication) {
+        List<TradeDTO> trades = tradeService.getUserTradesWithProjection(authentication.getName());
+        return ResponseEntity.ok(trades);
     }
 }

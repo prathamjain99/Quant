@@ -1,12 +1,12 @@
 package com.quantcrux.service;
 
 import com.quantcrux.dto.PortfolioSummary;
-import com.quantcrux.model.Trade;
+import com.quantcrux.dto.TradeDTO;
 import com.quantcrux.model.User;
-import com.quantcrux.repository.TradeRepository;
 import com.quantcrux.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,10 +14,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 public class PortfolioService {
 
     @Autowired
-    private TradeRepository tradeRepository;
+    private TradeService tradeService;
 
     @Autowired
     private UserRepository userRepository;
@@ -26,9 +27,10 @@ public class PortfolioService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<Trade> trades = tradeRepository.findByUser(user);
+        // Use TradeService to get trades with proper DTO projection
+        List<TradeDTO> trades = tradeService.getUserTrades(username);
 
-        // Calculate portfolio summary
+        // Calculate portfolio summary using DTOs
         double totalInvestment = trades.stream()
                 .mapToDouble(trade -> trade.getNotional() * (trade.getEntryPrice() != null ? trade.getEntryPrice() / 100 : 1))
                 .sum();
@@ -50,24 +52,22 @@ public class PortfolioService {
         summary.put("pnlPercentage", pnlPercentage);
         summary.put("positionCount", trades.size());
 
-        // Convert trades to position format
+        // Convert trades to position format using DTOs
         List<Map<String, Object>> positions = trades.stream().map(trade -> {
             Map<String, Object> position = new HashMap<>();
             position.put("id", trade.getId().toString());
             
             Map<String, Object> product = new HashMap<>();
-            product.put("name", trade.getProduct().getName());
-            product.put("type", trade.getProduct().getType());
-            product.put("underlyingAsset", trade.getProduct().getUnderlyingAsset());
+            product.put("name", trade.getProductName());
+            product.put("type", trade.getProductType());
+            product.put("underlyingAsset", trade.getUnderlyingAsset());
             position.put("product", product);
             
             position.put("quantity", trade.getNotional());
             position.put("entryPrice", trade.getEntryPrice());
             position.put("currentValue", trade.getNotional() * (trade.getCurrentPrice() != null ? trade.getCurrentPrice() / 100 : trade.getEntryPrice() / 100));
             position.put("totalInvestment", trade.getNotional() * (trade.getEntryPrice() != null ? trade.getEntryPrice() / 100 : 1));
-            
-            double pnl = (Double) position.get("currentValue") - (Double) position.get("totalInvestment");
-            position.put("unrealizedPnl", pnl);
+            position.put("unrealizedPnl", trade.getPnl());
             
             return position;
         }).collect(Collectors.toList());
