@@ -2,11 +2,13 @@ package com.quantcrux.controller;
 
 import com.quantcrux.dto.BacktestRequest;
 import com.quantcrux.dto.BacktestResult;
+import com.quantcrux.dto.StrategyDTO;
 import com.quantcrux.model.Strategy;
 import com.quantcrux.model.User;
 import com.quantcrux.repository.StrategyRepository;
 import com.quantcrux.repository.UserRepository;
 import com.quantcrux.service.BacktestService;
+import com.quantcrux.service.StrategyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -21,6 +23,9 @@ import java.util.List;
 public class StrategyController {
 
     @Autowired
+    private StrategyService strategyService;
+
+    @Autowired
     private StrategyRepository strategyRepository;
 
     @Autowired
@@ -29,12 +34,12 @@ public class StrategyController {
     @Autowired
     private BacktestService backtestService;
 
+    /**
+     * Get all strategies for the authenticated user using DTO projection
+     */
     @GetMapping
-    public ResponseEntity<List<Strategy>> getAllStrategies(Authentication authentication) {
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        List<Strategy> strategies = strategyRepository.findByUser(user);
+    public ResponseEntity<List<StrategyDTO>> getAllStrategies(Authentication authentication) {
+        List<StrategyDTO> strategies = strategyService.getUserStrategies(authentication.getName());
         return ResponseEntity.ok(strategies);
     }
 
@@ -48,18 +53,12 @@ public class StrategyController {
         return ResponseEntity.ok(savedStrategy);
     }
 
+    /**
+     * Get a specific strategy by ID using DTO projection
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<Strategy> getStrategy(@PathVariable Long id, Authentication authentication) {
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        Strategy strategy = strategyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Strategy not found"));
-        
-        if (!strategy.getUser().getId().equals(user.getId())) {
-            return ResponseEntity.forbidden().build();
-        }
-        
+    public ResponseEntity<StrategyDTO> getStrategy(@PathVariable Long id, Authentication authentication) {
+        StrategyDTO strategy = strategyService.getStrategy(authentication.getName(), id);
         return ResponseEntity.ok(strategy);
     }
 }
