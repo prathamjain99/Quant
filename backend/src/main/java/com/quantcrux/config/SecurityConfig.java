@@ -68,6 +68,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/strategies/**").hasAnyRole("RESEARCHER", "PORTFOLIO_MANAGER")
                 .requestMatchers("/api/products/**").hasRole("PORTFOLIO_MANAGER")
                 .requestMatchers("/api/trades/**").hasAnyRole("CLIENT", "PORTFOLIO_MANAGER")
+                .requestMatchers("/api/portfolios/**").hasAnyRole("CLIENT", "PORTFOLIO_MANAGER", "RESEARCHER")
                 .anyRequest().authenticated()
             );
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
-import { TrendingUp, BarChart3, Vibrate as Strategy, PieChart, FileText, Briefcase, TestTube, Settings, Activity, Package, DollarSign } from 'lucide-react';
+import { TrendingUp, BarChart3, Vibrate as Strategy, PieChart, FileText, Briefcase, TestTube, Settings, Activity, Package, DollarSign, FolderOpen } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
   const { user } = useAuth();
@@ -11,6 +11,7 @@ const Sidebar: React.FC = () => {
     const baseItems = [
       { path: '/dashboard', icon: BarChart3, label: 'Overview', end: true },
       { path: '/dashboard/portfolio', icon: Briefcase, label: 'Portfolio' },
+      { path: '/dashboard/portfolios', icon: FolderOpen, label: 'Portfolio Management' },
       { path: '/dashboard/analytics', icon: Activity, label: 'Analytics' },
       { path: '/dashboard/reports', icon: FileText, label: 'Reports' }
     ];

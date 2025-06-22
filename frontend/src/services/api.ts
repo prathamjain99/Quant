@@ -175,6 +175,32 @@ export const portfolioAPI = {
     api.post('/api/portfolio/positions', null, { params }),
 };
 
+export const portfolioManagementAPI = {
+  getUserPortfolios: () =>
+    api.get('/api/portfolios'),
+  
+  createPortfolio: (portfolio: { name: string; description: string }) =>
+    api.post('/api/portfolios', portfolio),
+  
+  getPortfolioDetails: (id: number) =>
+    api.get(`/api/portfolios/${id}`),
+  
+  updatePortfolio: (id: number, portfolio: { name: string; description: string }) =>
+    api.put(`/api/portfolios/${id}`, portfolio),
+  
+  deletePortfolio: (id: number) =>
+    api.delete(`/api/portfolios/${id}`),
+  
+  searchPortfolios: (searchTerm: string) =>
+    api.get(`/api/portfolios?search=${encodeURIComponent(searchTerm)}`),
+  
+  getPortfolioStatistics: () =>
+    api.get('/api/portfolios/statistics'),
+  
+  health: () =>
+    api.get('/api/portfolios/health'),
+};
+
 export const marketDataAPI = {
   getMarketData: (symbol: string, days: number = 252) =>
     api.get(`/api/market-data/${symbol}?days=${days}`),
