@@ -111,6 +111,29 @@ export const authAPI = {
     api.get('/api/auth/health'),
 };
 
+export const dashboardAPI = {
+  getUserProfile: () =>
+    api.get('/api/auth/profile'),
+  
+  getUserSummary: () =>
+    api.get('/api/user/summary'),
+  
+  getUserActivity: (limit: number = 10) =>
+    api.get(`/api/user/activity?limit=${limit}`),
+  
+  getMarketSnapshot: () =>
+    api.get('/api/market/snapshot'),
+  
+  getSystemStatus: () =>
+    api.get('/api/system/status'),
+  
+  simulateMarketUpdate: () =>
+    api.post('/api/market/simulate-update'),
+  
+  healthCheck: () =>
+    api.get('/api/auth/health'),
+};
+
 export const strategyAPI = {
   getStrategies: () =>
     api.get('/api/strategies'),
