@@ -17,6 +17,10 @@ public class Trade {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "portfolio_id")
+    private Portfolio portfolio;
+
     @NotBlank
     @Column(name = "trade_type")
     private String tradeType;
@@ -53,6 +57,9 @@ public class Trade {
 
     public Product getProduct() { return product; }
     public void setProduct(Product product) { this.product = product; }
+
+    public Portfolio getPortfolio() { return portfolio; }
+    public void setPortfolio(Portfolio portfolio) { this.portfolio = portfolio; }
 
     public String getTradeType() { return tradeType; }
     public void setTradeType(String tradeType) { this.tradeType = tradeType; }

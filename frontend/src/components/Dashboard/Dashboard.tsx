@@ -8,6 +8,7 @@ import StrategyBuilder from '../Strategy/StrategyBuilder';
 import Backtesting from '../Strategy/Backtesting';
 import ProductCreator from '../Products/ProductCreator';
 import Portfolio from '../Portfolio/Portfolio';
+import PortfolioManagement from '../Portfolio/PortfolioManagement';
 import Analytics from '../Analytics/Analytics';
 import Reports from '../Reports/Reports';
 import TradingDesk from '../Trading/TradingDesk';
@@ -34,6 +35,7 @@ const Dashboard: React.FC = () => {
               <Route path="/products" element={<ProductCreator />} />
             )}
             <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="/portfolios" element={<PortfolioManagement />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/reports" element={<Reports />} />
           </Routes>
