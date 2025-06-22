@@ -5,6 +5,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import Overview from './Overview';
 import StrategyBuilder from '../Strategy/StrategyBuilder';
+import StrategyManagement from '../Strategy/StrategyManagement';
 import Backtesting from '../Strategy/Backtesting';
 import ProductCreator from '../Products/ProductCreator';
 import Portfolio from '../Portfolio/Portfolio';
@@ -25,6 +26,7 @@ const Dashboard: React.FC = () => {
           <Routes>
             <Route path="/" element={<Overview />} />
             <Route path="/trading" element={<TradingDesk />} />
+            <Route path="/strategies-v2" element={<StrategyManagement />} />
             {(user?.role === 'researcher' || user?.role === 'portfolio_manager') && (
               <>
                 <Route path="/strategies" element={<StrategyBuilder />} />
