@@ -38,7 +38,7 @@ public class PortfolioService {
         double totalValue = trades.stream()
                 .mapToDouble(trade -> {
                     double currentPrice = trade.getCurrentPrice() != null ? trade.getCurrentPrice() : trade.getEntryPrice();
-                    return trade.getNotional() * (currentPrice != null ? currentPrice / 100 : 1);
+                    return trade.getNotional() * (currentPrice != 0.0 ? currentPrice / 100 : 1);
                 })
                 .sum();
 
