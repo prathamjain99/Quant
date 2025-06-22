@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Strategy as StrategyIcon, 
+  Layers as StrategyIcon, 
   TestTube, 
   FileText, 
   PieChart, 

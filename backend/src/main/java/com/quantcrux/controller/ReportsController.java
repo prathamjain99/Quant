@@ -11,7 +11,8 @@ import jakarta.validation.Valid;
 import java.util.Map;
 import java.util.HashMap;
 
-@CrossOrigin(origins = "http://localhost:3000")
+// @CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"}, maxAge = 3600)
 @RestController
 @RequestMapping("/api/reports")
 public class ReportsController {
